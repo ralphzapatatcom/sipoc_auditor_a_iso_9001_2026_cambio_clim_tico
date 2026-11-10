@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-900 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISO 9001:2026 / ISO 19011:2026 - Cambio Climático Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        iso: {
+                            blue: '#1e3a8a',
+                            teal: '#0d9488',
+                            amber: '#d97706',
+                            rose: '#e11d48',
+                            emerald: '#059669',
+                            dark: '#0f172a',
+                            card: '#1e293b'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #475569; }
+    </style>
+</head>
+<body class="h-full font-sans antialiased flex flex-col bg-slate-950 text-slate-100 overflow-x-hidden">
+
+    <!-- Header / Navbar -->
+    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-teal-500/20 p-2 rounded-xl text-teal-400 border border-teal-500/30">
+                        <i class="fa-solid fa-cloud-sun-rain text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold text-white leading-tight flex items-center gap-2">
+                            SIPOC: CAMBIO CLIMÁTICO EN ISO 9001:2026
+                            <span class="text-xs font-semibold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">ISO 19011:2026</span>
+                        </h1>
+                        <p class="text-xs text-slate-400">Auditoría de Proceso & Integración SGC | pymesycalidad20.com</p>
+                    </div>
+                </div>
+
+                <!-- Action Buttons / Nav Tabs -->
+                <nav class="hidden md:flex space-x-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                    <button onclick="switchTab('tab-sipoc')" id="btn-tab-sipoc" class="nav-btn px-4 py-2 text-xs font-semibold rounded-lg flex items-center gap-2 bg-teal-600 text-white shadow-lg transition-all">
+                        <i class="fa-solid fa-diagram-project"></i> Diagrama SIPOC
+                    </button>
+                    <button onclick="switchTab('tab-auditor')" id="btn-tab-auditor" class="nav-btn px-4 py-2 text-xs font-semibold rounded-lg flex items-center gap-2 text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                        <i class="fa-solid fa-clipboard-check"></i> Panel del Auditor
+                    </button>
+                    <button onclick="switchTab('tab-sql')" id="btn-tab-sql" class="nav-btn px-4 py-2 text-xs font-semibold rounded-lg flex items-center gap-2 text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                        <i class="fa-solid fa-database"></i> 40 Inserts SQL
+                    </button>
+                    <button onclick="switchTab('tab-queries')" id="btn-tab-queries" class="nav-btn px-4 py-2 text-xs font-semibold rounded-lg flex items-center gap-2 text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                        <i class="fa-solid fa-chart-pie"></i> 6 Queries & KPIs
+                    </button>
+                </nav>
+
+                <div class="flex items-center gap-2">
+                    <button onclick="resetToDefaults()" title="Restablecer Datos por Defecto" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-rotate-left"></i> <span class="hidden sm:inline">Reset</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Navigation -->
+        <div class="md:hidden flex overflow-x-auto p-2 bg-slate-950 border-t border-slate-800 space-x-2 custom-scrollbar">
+            <button onclick="switchTab('tab-sipoc')" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-teal-600 text-white whitespace-nowrap">SIPOC</button>
+            <button onclick="switchTab('tab-auditor')" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 text-slate-300 whitespace-nowrap">Panel Auditor</button>
+            <button onclick="switchTab('tab-sql')" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 text-slate-300 whitespace-nowrap">SQL DDL/DML</button>
+            <button onclick="switchTab('tab-queries')" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 text-slate-300 whitespace-nowrap">6 Queries KPI</button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
+
+        <!-- Banner Propósito -->
+        <div class="bg-gradient-to-r from-blue-900/40 via-teal-900/30 to-slate-900 p-4 rounded-2xl border border-teal-500/20 shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <span class="p-3 bg-teal-500/20 text-teal-300 rounded-xl text-xl font-bold border border-teal-500/30">
+                    <i class="fa-solid fa-bullseye"></i>
+                </span>
+                <div>
+                    <h2 class="text-sm font-bold text-teal-300 uppercase tracking-wider">Propósito Auditoría de Proceso</h2>
+                    <p class="text-xs sm:text-sm text-slate-300">
+                        Determinar si el cambio climático es pertinente para la organización y, cuando lo sea, integrar sus efectos en la planificación, la operación y la mejora del sistema de gestión de la calidad.
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 self-end md:self-auto text-xs font-semibold bg-slate-900/80 px-3 py-2 rounded-xl border border-slate-700">
+                <span class="text-amber-400"><i class="fa-solid fa-star"></i> Req. Cambio Climático:</span>
+                <span class="text-slate-300">cl. 4.1 / cl. 4.2 / cl. 6.1</span>
+            </div>
+        </div>
+
+        <!-- Notification Toast -->
+        <div id="toast" class="hidden fixed bottom-5 right-5 z-50 bg-teal-600 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-teal-400 transition-all">
+            <i class="fa-solid fa-circle-check text-lg"></i>
+            <span id="toast-msg" class="text-xs font-medium">Acción completada con éxito</span>
+        </div>
+
+        <!-- ==================== PANTALLA 1: DIAGRAMA SIPOC INTERACTIVO ==================== -->
+        <section id="tab-sipoc" class="tab-content space-y-6">
+
+            <!-- Controls bar -->
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-900 p-4 rounded-2xl border border-slate-800">
+                <div class="relative w-full sm:w-72">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-500 text-xs"></i>
+                    <input type="text" id="sipoc-search" oninput="renderSipoc()" placeholder="Buscar elemento SIPOC..." class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-teal-500">
+                </div>
+                <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                    <button onclick="openModal('modal-add-sipoc')" class="w-full sm:w-auto px-4 py-2 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-2 shadow-lg transition">
+                        <i class="fa-solid fa-plus"></i> Agregar Elemento SIPOC
+                    </button>
+                </div>
+            </div>
+
+            <!-- SIPOC Grid Diagram -->
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+
+                <!-- 1. SUPPLIERS -->
+                <div class="bg-slate-900/90 rounded-2xl border border-blue-500/30 overflow-hidden flex flex-col shadow-xl">
+                    <div class="bg-blue-950/80 p-3 border-b border-blue-500/30 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center">1</span>
+                            <h3 class="font-bold text-xs text-blue-200 uppercase tracking-wider">S - SUPPLIERS</h3>
+                        </div>
+                        <span class="text-[10px] text-blue-400 font-semibold">(Proveedores)</span>
+                    </div>
+                    <div id="sipoc-suppliers" class="p-3 space-y-2 flex-1 overflow-y-auto max-h-[600px] custom-scrollbar">
+                        <!-- Rendered dynamically -->
+                    </div>
+                </div>
+
+                <!-- 2. INPUTS -->
+                <div class="bg-slate-900/90 rounded-2xl border border-amber-500/30 overflow-hidden flex flex-col shadow-xl">
+                    <div class="bg-amber-950/80 p-3 border-b border-amber-500/30 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-full bg-amber-600 text-white font-bold text-xs flex items-center justify-center">2</span>
+                            <h3 class="font-bold text-xs text-amber-200 uppercase tracking-wider">I - INPUTS</h3>
+                        </div>
+                        <span class="text-[10px] text-amber-400 font-semibold">(Entradas)</span>
+                    </div>
+                    <div id="sipoc-inputs" class="p-3 space-y-2 flex-1 overflow-y-auto max-h-[600px] custom-scrollbar">
+                        <!-- Rendered dynamically -->
+                    </div>
+                </div>
+
+                <!-- 3. PROCESS (10 PASOS) -->
+                <div class="bg-slate-900/90 rounded-2xl border border-teal-500/30 overflow-hidden flex flex-col shadow-xl md:col-span-1">
+                    <div class="bg-teal-950/80 p-3 border-b border-teal-500/30 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-full bg-teal-600 text-white font-bold text-xs flex items-center justify-center">3</span>
+                            <h3 class="font-bold text-xs text-teal-200 uppercase tracking-wider">P - PROCESS</h3>
+                        </div>
+                        <span class="text-[10px] text-teal-400 font-semibold">(10 Pasos Clave)</span>
+                    </div>
+                    <div id="sipoc-process" class="p-3 space-y-2 flex-1 overflow-y-auto max-h-[600px] custom-scrollbar">
+                        <!-- Rendered dynamically -->
+                    </div>
+                </div>
+
+                <!-- 4. OUTPUTS -->
+                <div class="bg-slate-900/90 rounded-2xl border border-indigo-500/30 overflow-hidden flex flex-col shadow-xl">
+                    <div class="bg-indigo-950/80 p-3 border-b border-indigo-500/30 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center">4</span>
+                            <h3 class="font-bold text-xs text-indigo-200 uppercase tracking-wider">O - OUTPUTS</h3>
+                        </div>
+                        <span class="text-[10px] text-indigo-400 font-semibold">(Salidas)</span>
+                    </div>
+                    <div id="sipoc-outputs" class="p-3 space-y-2 flex-1 overflow-y-auto max-h-[600px] custom-scrollbar">
+                        <!-- Rendered dynamically -->
+                    </div>
+                </div>
+
+                <!-- 5. CUSTOMERS -->
+                <div class="bg-slate-900/90 rounded-2xl border border-purple-500/30 overflow-hidden flex flex-col shadow-xl">
+                    <div class="bg-purple-950/80 p-3 border-b border-purple-500/30 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-full bg-purple-600 text-white font-bold text-xs flex items-center justify-center">5</span>
+                            <h3 class="font-bold text-xs text-purple-200 uppercase tracking-wider">C - CUSTOMERS</h3>
+                        </div>
+                        <span class="text-[10px] text-purple-400 font-semibold">(Clientes)</span>
+                    </div>
+                    <div id="sipoc-customers" class="p-3 space-y-2 flex-1 overflow-y-auto max-h-[600px] custom-scrollbar">
+                        <!-- Rendered dynamically -->
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ==================== PANTALLA 2: PANEL DEL AUDITOR ISO 19011:2026 ==================== -->
+        <section id="tab-auditor" class="tab-content hidden space-y-6">
+
+            <!-- Title & Quick Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex items-center gap-4">
+                    <div class="p-3 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                        <i class="fa-solid fa-bookmark text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400 uppercase font-semibold">Cláusulas ISO</p>
+                        <h4 class="text-lg font-bold text-slate-100" id="stat-clauses">12 Cláusulas</h4>
+                    </div>
+                </div>
+                <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex items-center gap-4">
+                    <div class="p-3 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                        <i class="fa-solid fa-folder-open text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400 uppercase font-semibold">Evidencias Requeridas</p>
+                        <h4 class="text-lg font-bold text-slate-100" id="stat-evidences">8 Registros</h4>
+                    </div>
+                </div>
+                <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex items-center gap-4">
+                    <div class="p-3 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                        <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400 uppercase font-semibold">Riesgos Auditables</p>
+                        <h4 class="text-lg font-bold text-slate-100" id="stat-risks">8 Focos Atención</h4>
+                    </div>
+                </div>
+                <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex items-center gap-4">
+                    <div class="p-3 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                        <i class="fa-solid fa-comments text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400 uppercase font-semibold">Preguntas Guía</p>
+                        <h4 class="text-lg font-bold text-slate-100" id="stat-questions">6 Preguntas</h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Auditor Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                <!-- Block A: Cláusulas Auditables -->
+                <div class="bg-slate-900 rounded-2xl border border-rose-500/30 p-5 shadow-xl space-y-4">
+                    <div class="flex justify-between items-center border-b border-rose-500/20 pb-3">
+                        <h3 class="font-bold text-sm text-rose-300 flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-lg bg-rose-500/20 text-rose-400 border border-rose-500/40 flex items-center justify-center text-xs">A</span>
+                            A. CLÁUSULAS AUDITABLES (ISO 9001:2026)
+                        </h3>
+                        <button onclick="openModal('modal-add-auditor', 'clausula')" class="text-xs bg-rose-600/20 hover:bg-rose-600/40 text-rose-300 border border-rose-500/30 px-2.5 py-1 rounded-lg transition">
+                            <i class="fa-solid fa-plus"></i> Agregar
+                        </button>
+                    </div>
+                    <div id="auditor-clauses" class="space-y-2 max-h-[350px] overflow-y-auto custom-scrollbar">
+                        <!-- Rendered dynamically -->
+                    </div>
+                    <div class="p-2.5 bg-rose-950/40 rounded-xl border border-rose-500/20 text-[11px] text-rose-300">
+                        <i class="fa-solid fa-star text-amber-400"></i> <strong>Requisito Clave:</strong> 4.1 Comprensión de la org. y su contexto (evaluar si el cambio climático es pertinente).
+                    </div>
+                </div>
+
+                <!-- Block B: Fuentes de Evidencia Objetivo -->
+                <div class="bg-slate-900 rounded-2xl border border-blue-500/30 p-5 shadow-xl space-y-4">
+                    <div class="flex justify-between items-center border-b border-blue-500/20 pb-3">
+                        <h3 class="font-bold text-sm text-blue-300 flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-lg bg-blue-500/20 text-blue-400 border border-blue-500/40 flex items-center justify-center text-xs">B</span>
+                            B. FUENTES DE EVIDENCIA OBJETIVA (Qué Pedir)
+                        </h3>
+                        <button onclick="openModal('modal-add-auditor', 'evidencia')" class="text-xs bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/30 px-2.5 py-1 rounded-lg transition">
+                            <i class="fa-solid fa-plus"></i> Agregar
+                        </button>
+                    </div>
+                    <div id="auditor-evidences" class="space-y-2 max-h-[350px] overflow-y-auto custom-scrollbar">
+                        <!-- Rendered dynamically -->
+                    </div>
+                    <div class="p-2.5 bg-blue-950/40 rounded-xl border border-blue-500/20 text-[11px] text-blue-300">
+                        <i class="fa-solid fa-circle-info"></i> El auditor debe verificar documentos sustentables, actas de dirección y requisitos de productos/servicios.
+                    </div>
+                </div>
+
+                <!-- Block C: Riesgos de Auditoría -->
+                <div class="bg-slate-900 rounded-2xl border border-amber-500/30 p-5 shadow-xl space-y-4">
+                    <div class="flex justify-between items-center border-b border-amber-500/20 pb-3">
+                        <h3 class="font-bold text-sm text-amber-300 flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center justify-center text-xs">C</span>
+                            C. RIESGOS DE AUDITORÍA (Foco de Atención)
+                        </h3>
+                        <button onclick="openModal('modal-add-auditor', 'riesgo')" class="text-xs bg-amber-600/20 hover:bg-amber-600/40 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded-lg transition">
+                            <i class="fa-solid fa-plus"></i> Agregar
+                        </button>
+                    </div>
+                    <div id="auditor-risks" class="space-y-2 max-h-[350px] overflow-y-auto custom-scrollbar">
+                        <!-- Rendered dynamically -->
+                    </div>
+                    <div class="p-2.5 bg-amber-950/40 rounded-xl border border-amber-500/20 text-[11px] text-amber-300">
+                        <i class="fa-solid fa-triangle-exclamation text-rose-400"></i> <strong>Punto Crítico:</strong> Concluir no pertinencia sin fundamento metodológico u omitir acciones planificadas.
+                    </div>
+                </div>
+
+                <!-- Block D: Preguntas Sugeridas -->
+                <div class="bg-slate-900 rounded-2xl border border-emerald-500/30 p-5 shadow-xl space-y-4">
+                    <div class="flex justify-between items-center border-b border-emerald-500/20 pb-3">
+                        <h3 class="font-bold text-sm text-emerald-300 flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center text-xs">D</span>
+                            D. PREGUNTAS DE AUDITORÍA SUGERIDAS
+                        </h3>
+                        <button onclick="openModal('modal-add-auditor', 'pregunta')" class="text-xs bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/30 px-2.5 py-1 rounded-lg transition">
+                            <i class="fa-solid fa-plus"></i> Agregar
+                        </button>
+                    </div>
+                    <div id="auditor-questions" class="space-y-2 max-h-[350px] overflow-y-auto custom-scrollbar">
+                        <!-- Rendered dynamically -->
+                    </div>
+                    <div class="p-2.5 bg-emerald-950/40 rounded-xl border border-emerald-500/20 text-[11px] text-emerald-300">
+                        <i class="fa-solid fa-lightbulb"></i> Usar estas preguntas para entrevistar a la Alta Dirección y Líderes de Proceso durante la auditoría.
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Auditor Notes & Good Practices -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-slate-900/80 p-4 rounded-2xl border border-amber-500/20 flex items-start gap-3">
+                    <div class="p-2.5 bg-amber-500/20 text-amber-400 rounded-xl border border-amber-500/30 mt-0.5">
+                        <i class="fa-regular fa-lightbulb text-xl"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-xs uppercase text-amber-300 tracking-wider">Nota para el Auditor</h4>
+                        <p class="text-xs text-slate-300 mt-1">
+                            El auditor verifica la <strong>determinación, el enfoque y la evidencia</strong>; no juzga la realidad ni las causas del cambio climático. Mantén objetividad y neutralidad en todo momento.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/80 p-4 rounded-2xl border border-emerald-500/20">
+                    <h4 class="font-bold text-xs uppercase text-emerald-300 tracking-wider flex items-center gap-2 mb-2">
+                        <i class="fa-solid fa-check-double"></i> Buenas Prácticas
+                    </h4>
+                    <div class="grid grid-cols-2 gap-2 text-xs text-slate-300">
+                        <span class="flex items-center gap-1.5"><i class="fa-solid fa-check text-emerald-400"></i> Enfoque basado en riesgos</span>
+                        <span class="flex items-center gap-1.5"><i class="fa-solid fa-check text-emerald-400"></i> Transparencia y comunicación</span>
+                        <span class="flex items-center gap-1.5"><i class="fa-solid fa-check text-emerald-400"></i> Participación partes interesadas</span>
+                        <span class="flex items-center gap-1.5"><i class="fa-solid fa-check text-emerald-400"></i> Mejora continua</span>
+                        <span class="flex items-center gap-1.5"><i class="fa-solid fa-check text-emerald-400"></i> Decisiones basadas en evidencia</span>
+                        <span class="flex items-center gap-1.5"><i class="fa-solid fa-check text-emerald-400"></i> Alineación con estrategia</span>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ==================== PANTALLA 3: GESTIÓN DE DATOS & 40 INSERTS SQL ==================== -->
+        <section id="tab-sql" class="tab-content hidden space-y-6">
+
+            <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                            <i class="fa-solid fa-database text-teal-400"></i> Script DDL + 40 INSERTS SQL (MariaDB / MySQL)
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-1">
+                            Estructura de tablas y 40 inserciones de datos reales del SIPOC y Auditoría ISO 9001:2026 sobre Cambio Climático.
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="copySqlScript()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-teal-300 text-xs font-semibold rounded-xl border border-slate-700 flex items-center gap-2 transition">
+                            <i class="fa-solid fa-copy"></i> Copiar SQL Script
+                        </button>
+                        <button onclick="resetToDefaults()" class="px-3 py-2 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-xl flex items-center gap-2 shadow-lg transition">
+                            <i class="fa-solid fa-cloud-arrow-down"></i> Cargar Datos en App
+                        </button>
+                    </div>
+                </div>
+
+                <div class="relative">
+                    <pre id="sql-code-block" class="bg-slate-950 p-4 rounded-xl text-emerald-400 font-mono text-xs overflow-x-auto max-h-[500px] border border-slate-800 custom-scrollbar"></pre>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ==================== PANTALLA 4: 6 QUERIES SQL & VISUALIZACIÓN KPI ==================== -->
+        <section id="tab-queries" class="tab-content hidden space-y-6">
+
+            <!-- Query Selection Header -->
+            <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 space-y-3">
+                <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-line text-amber-400"></i> 6 Consultas SQL Estratégicas y Tableros KPI (ISO 9001:2026)
+                </h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+                    <button onclick="runQuery(1)" id="btn-q1" class="q-btn px-3 py-2 rounded-xl text-xs font-semibold text-left border bg-teal-600 border-teal-500 text-white">1. Matriz ISO 9001</button>
+                    <button onclick="runQuery(2)" id="btn-q2" class="q-btn px-3 py-2 rounded-xl text-xs font-semibold text-left border bg-slate-950 border-slate-800 text-slate-400 hover:text-white">2. Gap Evidencias</button>
+                    <button onclick="runQuery(3)" id="btn-q3" class="q-btn px-3 py-2 rounded-xl text-xs font-semibold text-left border bg-slate-950 border-slate-800 text-slate-400 hover:text-white">3. Riesgos vs Acciones</button>
+                    <button onclick="runQuery(4)" id="btn-q4" class="q-btn px-3 py-2 rounded-xl text-xs font-semibold text-left border bg-slate-950 border-slate-800 text-slate-400 hover:text-white">4. Traza SIPOC</button>
+                    <button onclick="runQuery(5)" id="btn-q5" class="q-btn px-3 py-2 rounded-xl text-xs font-semibold text-left border bg-slate-950 border-slate-800 text-slate-400 hover:text-white">5. Revisión Dirección</button>
+                    <button onclick="runQuery(6)" id="btn-q6" class="q-btn px-3 py-2 rounded-xl text-xs font-semibold text-left border bg-slate-950 border-slate-800 text-slate-400 hover:text-white">6. Madurez Auditoría</button>
+                </div>
+            </div>
+
+            <!-- Query Executed View -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                <!-- Left Column: SQL Code & Description -->
+                <div class="lg:col-span-1 bg-slate-900 p-4 rounded-2xl border border-slate-800 space-y-4 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between">
+                            <span id="query-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 uppercase">Query 1</span>
+                            <span class="text-xs text-slate-500 font-mono">SQL View</span>
+                        </div>
+                        <h4 id="query-title" class="text-sm font-bold text-slate-100 mt-2">Matriz de Cumplimiento ISO 9001:2026</h4>
+                        <p id="query-desc" class="text-xs text-slate-400 mt-1">Mapea el porcentaje de cumplimiento por cada cláusula clave del estándar.</p>
+                        
+                        <div class="mt-4">
+                            <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Código SQL Ejecutado:</p>
+                            <pre id="query-sql-code" class="bg-slate-950 p-3 rounded-xl text-amber-300 font-mono text-[11px] overflow-x-auto border border-slate-800 custom-scrollbar"></pre>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800 text-xs text-slate-300 flex items-start gap-2">
+                        <i class="fa-solid fa-circle-info text-teal-400 mt-0.5"></i>
+                        <span id="query-sug">Sugerencia: Revisar cl. 4.1 y 4.2 obligatoriamente para fundamentar el alcance.</span>
+                    </div>
+                </div>
+
+                <!-- Right Column: Visual Chart & Simulated Result Table -->
+                <div class="lg:col-span-2 space-y-6">
+
+                    <!-- Chart Box -->
+                    <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 h-64 relative flex items-center justify-center">
+                        <canvas id="kpiChart" class="w-full h-full"></canvas>
+                    </div>
+
+                    <!-- Simulated Table -->
+                    <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 space-y-3">
+                        <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Resultados de la Consulta</h4>
+                        <div class="overflow-x-auto custom-scrollbar">
+                            <table class="w-full text-left text-xs text-slate-300">
+                                <thead class="bg-slate-950 text-slate-400 uppercase text-[10px] border-b border-slate-800">
+                                    <tr id="query-table-head">
+                                        <!-- Header dynamically generated -->
+                                    </tr>
+                                </thead>
+                                <tbody id="query-table-body" class="divide-y divide-slate-800">
+                                    <!-- Rows dynamically generated -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 border-t border-slate-800 py-4 mt-auto text-center text-xs text-slate-500">
+        ISO 9001:2026 & ISO 19011:2026 Auditoría de Proceso - Adaptado de pymesycalidad20.com (Daniel J. Rodríguez)
+    </footer>
+
+    <!-- ==================== MODALES CRUD ==================== -->
+
+    <!-- Modal Agregar/Editar SIPOC -->
+    <div id="modal-add-sipoc" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-sm text-slate-100" id="modal-sipoc-title">Agregar Elemento SIPOC</h3>
+                <button onclick="closeModal('modal-add-sipoc')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="form-sipoc" onsubmit="saveSipocItem(event)" class="space-y-3 text-xs">
+                <input type="hidden" id="sipoc-id">
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Categoría SIPOC</label>
+                    <select id="sipoc-category" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:outline-none focus:border-teal-500">
+                        <option value="suppliers">1. S - Suppliers (Proveedores)</option>
+                        <option value="inputs">2. I - Inputs (Entradas)</option>
+                        <option value="process">3. P - Process (Pasos del Proceso)</option>
+                        <option value="outputs">4. O - Outputs (Salidas)</option>
+                        <option value="customers">5. C - Customers (Clientes)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Título / Nombre</label>
+                    <input type="text" id="sipoc-title-input" required placeholder="Ej. Alta Dirección" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:outline-none focus:border-teal-500">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Detalle / Cláusula ISO</label>
+                    <input type="text" id="sipoc-detail-input" placeholder="Ej. (contexto y dirección estratégica, cl. 4.1)" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:outline-none focus:border-teal-500">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Icono FontAwesome (Opcional)</label>
+                    <input type="text" id="sipoc-icon-input" placeholder="fa-users" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:outline-none focus:border-teal-500">
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('modal-add-sipoc')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-semibold">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-teal-600 hover:bg-teal-500 text-white rounded-xl font-semibold">Guardar Elemento</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Agregar/Editar Panel Auditor -->
+    <div id="modal-add-auditor" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-sm text-slate-100" id="modal-auditor-title">Agregar Elemento al Panel</h3>
+                <button onclick="closeModal('modal-add-auditor')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="form-auditor" onsubmit="saveAuditorItem(event)" class="space-y-3 text-xs">
+                <input type="hidden" id="auditor-id">
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Sección</label>
+                    <select id="auditor-section" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:outline-none focus:border-teal-500">
+                        <option value="clausula">A. Cláusulas Auditables</option>
+                        <option value="evidencia">B. Fuentes de Evidencia Objetivo</option>
+                        <option value="riesgo">C. Riesgos de Auditoría</option>
+                        <option value="pregunta">D. Preguntas Sugeridas</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Texto del Elemento</label>
+                    <textarea id="auditor-text-input" rows="3" required placeholder="Escriba la evidencia, cláusula o pregunta..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:outline-none focus:border-teal-500"></textarea>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Código/Cláusula ISO (Opcional)</label>
+                    <input type="text" id="auditor-code-input" placeholder="Ej. cl. 4.1" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:outline-none focus:border-teal-500">
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('modal-add-auditor')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-semibold">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-teal-600 hover:bg-teal-500 text-white rounded-xl font-semibold">Guardar Registros</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SCRIPT DE LÓGICA Y DATOS DE LA APLICACIÓN -->
+    <script>
+        // Datos por defecto del Diagrama SIPOC
+        const defaultSipocData = {
+            suppliers: [
+                { id: 's1', title: 'Alta Dirección', detail: '(contexto y dirección estratégica)', icon: 'fa-users' },
+                { id: 's2', title: 'Comercialización y Ventas', detail: '(requisitos del cliente sobre cambio climático)', icon: 'fa-handshake' },
+                { id: 's3', title: 'Compras / Cadena de Suministro', detail: '(evaluación de proveedores sostenibles)', icon: 'fa-shopping-cart' },
+                { id: 's4', title: 'Diseño y Desarrollo', detail: '(de productos y servicios ecodiseñados)', icon: 'fa-gears' },
+                { id: 's5', title: 'Gestión de Riesgos y Oportunidades', detail: '(matriz de contexto climático)', icon: 'fa-triangle-exclamation' },
+                { id: 's6', title: 'Autoridades y Entes Reguladores', detail: '(normativas ambientales)', icon: 'fa-building-columns' },
+                { id: 's7', title: 'Partes Interesadas Externas', detail: '(clientes, comunidad, ONG, matriz)', icon: 'fa-globe' }
+            ],
+            inputs: [
+                { id: 'i1', title: 'Cuestiones externas e internas de la organización', detail: '(cl. 4.1)', icon: 'fa-earth-americas' },
+                { id: 'i2', title: 'Partes interesadas y sus requisitos', detail: '(cl. 4.2)', icon: 'fa-users-gear' },
+                { id: 'i3', title: 'Requisitos legales y reglamentarios aplicables', detail: '(normas de emisión)', icon: 'fa-scale-balanced' },
+                { id: 'i4', title: 'Requisitos contractuales del cliente', detail: '(p. ej. huella de carbono, neutralidad)', icon: 'fa-file-signature' },
+                { id: 'i5', title: 'Políticas y estrategia de sostenibilidad', detail: '(de la organización)', icon: 'fa-leaf' },
+                { id: 'i6', title: 'Resultados de seguimiento, análisis y evaluación previos', detail: '(cl. 9.1.3)', icon: 'fa-chart-column' },
+                { id: 'i7', title: 'Tendencias de mercado y expectativas del sector', detail: '(descarbonización)', icon: 'fa-chart-line' },
+                { id: 'i8', title: 'Información sobre vulnerabilidad de la cadena de suministro', detail: '(eventos climáticos)', icon: 'fa-circle-info' }
+            ],
+            process: [
+                { id: 'p1', num: 1, title: 'Determinar si el cambio climático es una cuestión pertinente', detail: '(cl. 4.1) ★', star: true },
+                { id: 'p2', num: 2, title: 'Dejar constancia de la decisión y del criterio aplicado', detail: '(evidencia recomendada)' },
+                { id: 'p3', num: 3, title: 'Identificar partes interesadas con requisitos relacionados con el cambio climático', detail: '(cl. 4.2)' },
+                { id: 'p4', num: 4, title: 'Realizar el seguimiento y la revisión de la información sobre estas cuestiones y partes interesadas', detail: '(cl. 4.1 y 4.2)' },
+                { id: 'p5', num: 5, title: 'Considerar 4.1 y 4.2 al determinar riesgos y oportunidades', detail: '(cl. 6.1.1)' },
+                { id: 'p6', num: 6, title: 'Planificar acciones sobre riesgos (cl. 6.1.2) y oportunidades (cl. 6.1.3)', detail: 'Integrarlas en los procesos y evaluar su eficacia' },
+                { id: 'p7', num: 7, title: 'Considerar el tema en los requisitos de productos y servicios y en las entradas del diseño', detail: '(cl. 8.2.2 y 8.3.3)' },
+                { id: 'p8', num: 8, title: 'Comunicar requisitos a proveedores externos y a partes interesadas', detail: '(cl. 8.4.3 y cl. 7.4)' },
+                { id: 'p9', num: 9, title: 'Dar seguimiento, analizar y evaluar el desempeño', detail: '(cl. 9.1.1 y 9.1.3)' },
+                { id: 'p10', num: 10, title: 'Revisión por la dirección y mejora continua', detail: '(cl. 9.3.2, 9.3.3 y 10.1)' }
+            ],
+            outputs: [
+                { id: 'o1', title: 'Determinación de pertinencia del cambio climático', detail: '(cl. 4.1) ★', star: true, icon: 'fa-clipboard-check' },
+                { id: 'o2', title: 'Partes interesadas y requisitos climáticos pertinentes', detail: '(cl. 4.2)', icon: 'fa-people-group' },
+                { id: 'o3', title: 'Riesgos y oportunidades determinados', detail: '(cl. 6.1.1)', icon: 'fa-triangle-exclamation' },
+                { id: 'o4', title: 'Acciones planificadas y evaluación de su eficacia', detail: '(cl. 6.1.2 y 6.1.3)', icon: 'fa-list-check' },
+                { id: 'o5', title: 'Requisitos de producto/servicio y entradas de diseño que consideren el tema', detail: '(cl. 8.2.2 y 8.3.3)', icon: 'fa-box-open' },
+                { id: 'o6', title: 'Requisitos comunicados a proveedores externos', detail: '(cl. 8.4.3)', icon: 'fa-paper-plane' },
+                { id: 'o7', title: 'Resultados del análisis y evaluación del desempeño', detail: '(cl. 9.1.3)', icon: 'fa-chart-pie' },
+                { id: 'o8', title: 'Decisiones de la revisión por la dirección y oportunidades de mejora', detail: '(cl. 9.3.2, 9.3.3 y 10.1)', icon: 'fa-pen-to-square' }
+            ],
+            customers: [
+                { id: 'c1', title: 'Todos los procesos del SGC', detail: '(reciben contexto, riesgos y oportunidades)', icon: 'fa-diagram-next' },
+                { id: 'c2', title: 'Comercialización y Ventas', detail: '(cumplimiento de requisitos de clientes)', icon: 'fa-handshake' },
+                { id: 'c3', title: 'Diseño y Desarrollo', detail: '(criterios para productos y servicios)', icon: 'fa-gears' },
+                { id: 'c4', title: 'Compras / Gestión de la cadena de suministro', detail: '(requisitos y controles)', icon: 'fa-cart-flatbed' },
+                { id: 'c5', title: 'Entes reguladores y autoridades', detail: '(cumplimiento normativo)', icon: 'fa-landmark' },
+                { id: 'c6', title: 'Partes interesadas externas', detail: '(información transparente)', icon: 'fa-shield-halved' },
+                { id: 'c7', title: 'Alta Dirección', detail: '(información para la toma de decisiones estratégicas)', icon: 'fa-user-tie' }
+            ]
+        };
+
+        // Datos por defecto del Panel del Auditor
+        const defaultAuditorData = {
+            clausula: [
+                { id: 'a1', code: '4.1', text: 'Comprensión de la organización y de su contexto ★', star: true },
+                { id: 'a2', code: '4.2', text: 'Partes interesadas (nota sobre cambio climático)' },
+                { id: 'a3', code: '6.1.1', text: 'Determinación de riesgos y oportunidades' },
+                { id: 'a4', code: '6.1.2', text: 'Acciones para abordar los riesgos' },
+                { id: 'a5', code: '6.1.3', text: 'Acciones para abordar las oportunidades' },
+                { id: 'a6', code: '7.4', text: 'Comunicación' },
+                { id: 'a7', code: '8.2.2', text: 'Requisitos de productos y servicios' },
+                { id: 'a8', code: '8.3.3', text: 'Entradas para el diseño y desarrollo' },
+                { id: 'a9', code: '8.4.3', text: 'Información para los proveedores externos' },
+                { id: 'a10', code: '9.1.3', text: 'Análisis y evaluación' },
+                { id: 'a11', code: '9.3.2', text: 'Entradas de la revisión por la dirección' },
+                { id: 'a12', code: '10.1', text: 'Mejora continua' }
+            ],
+            evidencia: [
+                { id: 'b1', code: 'cl. 4.1', text: 'Registro de la determinación sobre la pertinencia del cambio climático y el criterio aplicado.' },
+                { id: 'b2', code: 'cl. 4.2', text: 'Identificación de partes interesadas y sus requisitos relacionados con el clima.' },
+                { id: 'b3', code: 'cl. 6.1', text: 'Riesgos y oportunidades determinados que consideran 4.1 y 4.2.' },
+                { id: 'b4', code: 'cl. 6.1.2/6.1.3', text: 'Planes de acción, responsables y seguimiento.' },
+                { id: 'b5', code: 'cl. 8.2.2 y 8.3.3', text: 'Requisitos de producto/servicio y entradas de diseño.' },
+                { id: 'b6', code: 'cl. 8.4.3', text: 'Requisitos comunicados a proveedores externos.' },
+                { id: 'b7', code: 'cl. 9.1.3', text: 'Indicadores y resultados del análisis.' },
+                { id: 'b8', code: 'cl. 9.3.2', text: 'Actas de revisión por la dirección.' }
+            ],
+            riesgo: [
+                { id: 'c1', code: '★ Crítico', text: 'No haber determinado si el cambio climático es pertinente.', star: true },
+                { id: 'c2', code: 'Falla Criterio', text: 'Concluir que no es pertinente sin un criterio que sustente la decisión.' },
+                { id: 'c3', code: 'Omisión 4.2', text: 'No identificar partes interesadas con requisitos climáticos.' },
+                { id: 'c4', code: 'Desconexión', text: 'Pertinencia declarada, pero sin reflejo en riesgos (cl. 6.1).' },
+                { id: 'c5', code: 'Falta Plan', text: 'Acciones sin integrar en los procesos ni evaluar su eficacia.' },
+                { id: 'c6', code: 'Compras', text: 'Requisitos no comunicados a proveedores externos.' },
+                { id: 'c7', code: 'Seguimiento', text: 'Cuestiones y partes interesadas sin seguimiento.' },
+                { id: 'c8', code: 'Dirección', text: 'Revisión por la dirección sin considerar el contexto.' }
+            ],
+            pregunta: [
+                { id: 'd1', code: 'Pregunta 1', text: '¿Cómo determinaron si el cambio climático es pertinente para su organización?' },
+                { id: 'd2', code: 'Pregunta 2', text: '¿Qué criterio aplicaron y cómo lo mantienen actualizado?' },
+                { id: 'd3', code: 'Pregunta 3', text: '¿Qué partes interesadas tienen requisitos relacionados con el clima y cómo las identificaron?' },
+                { id: 'd4', code: 'Pregunta 4', text: '¿Cómo se reflejó esta determinación en sus riesgos y oportunidades?' },
+                { id: 'd5', code: 'Pregunta 5', text: '¿Qué acciones planificaron y cómo evalúan su eficacia?' },
+                { id: 'd6', code: 'Pregunta 6', text: '¿Cómo se consideran estos requisitos en productos, servicios y proveedores?' },
+                { id: 'd7', code: 'Pregunta 7', text: '¿Cómo revisa la Alta Dirección los cambios en el contexto?' }
+            ]
+        };
+
+        // Estado global de datos con LocalStorage
+        let sipocData = JSON.parse(localStorage.getItem('sipocData')) || defaultSipocData;
+        let auditorData = JSON.parse(localStorage.getItem('auditorData')) || defaultAuditorData;
+
+        function saveState() {
+            localStorage.setItem('sipocData', JSON.stringify(sipocData));
+            localStorage.setItem('auditorData', JSON.stringify(auditorData));
+        }
+
+        function resetToDefaults() {
+            sipocData = JSON.parse(JSON.stringify(defaultSipocData));
+            auditorData = JSON.parse(JSON.stringify(defaultAuditorData));
+            saveState();
+            renderSipoc();
+            renderAuditor();
+            showToast('Datos restablecidos correctamente');
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
+
+        // Navegación de pestañas
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-teal-600', 'text-white', 'shadow-lg');
+                btn.classList.add('text-slate-400', 'hover:text-white', 'hover:bg-slate-800');
+            });
+
+            const activeBtn = document.getElementById('btn-' + tabId);
+            if (activeBtn) {
+                activeBtn.classList.remove('text-slate-400', 'hover:text-white', 'hover:bg-slate-800');
+                activeBtn.classList.add('bg-teal-600', 'text-white', 'shadow-lg');
+            }
+
+            if (tabId === 'tab-queries') {
+                runQuery(1);
+            }
+        }
+
+        // RENDERIZAR DIAGRAMA SIPOC
+        function renderSipoc() {
+            const search = document.getElementById('sipoc-search').value.toLowerCase();
+
+            // Suppliers
+            const sContainer = document.getElementById('sipoc-suppliers');
+            sContainer.innerHTML = sipocData.suppliers
+                .filter(item => item.title.toLowerCase().includes(search) || item.detail.toLowerCase().includes(search))
+                .map(item => `
+                    <div class="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 hover:border-blue-500/50 transition group flex items-start justify-between gap-2">
+                        <div class="flex items-start gap-2">
+                            <i class="fa-solid ${item.icon || 'fa-user'} text-blue-400 mt-1 text-xs"></i>
+                            <div>
+                                <h4 class="font-semibold text-xs text-slate-200">${item.title}</h4>
+                                <p class="text-[10px] text-slate-400">${item.detail}</p>
+                            </div>
+                        </div>
+                        <div class="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition">
+                            <button onclick="deleteSipoc('suppliers', '${item.id}')" class="text-rose-400 hover:text-rose-300 text-[10px] p-1"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `).join('');
+
+            // Inputs
+            const iContainer = document.getElementById('sipoc-inputs');
+            iContainer.innerHTML = sipocData.inputs
+                .filter(item => item.title.toLowerCase().includes(search) || item.detail.toLowerCase().includes(search))
+                .map(item => `
+                    <div class="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 hover:border-amber-500/50 transition group flex items-start justify-between gap-2">
+                        <div class="flex items-start gap-2">
+                            <i class="fa-solid ${item.icon || 'fa-file-lines'} text-amber-400 mt-1 text-xs"></i>
+                            <div>
+                                <h4 class="font-semibold text-xs text-slate-200">${item.title}</h4>
+                                <p class="text-[10px] text-slate-400">${item.detail}</p>
+                            </div>
+                        </div>
+                        <div class="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition">
+                            <button onclick="deleteSipoc('inputs', '${item.id}')" class="text-rose-400 hover:text-rose-300 text-[10px] p-1"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `).join('');
+
+            // Process
+            const pContainer = document.getElementById('sipoc-process');
+            pContainer.innerHTML = sipocData.process
+                .filter(item => item.title.toLowerCase().includes(search) || item.detail.toLowerCase().includes(search))
+                .map(item => `
+                    <div class="bg-slate-950/80 p-2.5 rounded-xl border ${item.star ? 'border-amber-500/60 bg-amber-950/20' : 'border-slate-800'} hover:border-teal-500/50 transition group flex items-start justify-between gap-2">
+                        <div class="flex items-start gap-2">
+                            <span class="w-5 h-5 rounded-full bg-teal-500/20 text-teal-400 font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5 border border-teal-500/30">${item.num || '#'}</span>
+                            <div>
+                                <h4 class="font-semibold text-xs text-slate-200 flex items-center gap-1">
+                                    ${item.title} ${item.star ? '<i class="fa-solid fa-star text-amber-400 text-[10px]"></i>' : ''}
+                                </h4>
+                                <p class="text-[10px] text-slate-400">${item.detail}</p>
+                            </div>
+                        </div>
+                        <div class="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition">
+                            <button onclick="deleteSipoc('process', '${item.id}')" class="text-rose-400 hover:text-rose-300 text-[10px] p-1"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `).join('');
+
+            // Outputs
+            const oContainer = document.getElementById('sipoc-outputs');
+            oContainer.innerHTML = sipocData.outputs
+                .filter(item => item.title.toLowerCase().includes(search) || item.detail.toLowerCase().includes(search))
+                .map(item => `
+                    <div class="bg-slate-950/80 p-2.5 rounded-xl border ${item.star ? 'border-amber-500/60 bg-amber-950/20' : 'border-slate-800'} hover:border-indigo-500/50 transition group flex items-start justify-between gap-2">
+                        <div class="flex items-start gap-2">
+                            <i class="fa-solid ${item.icon || 'fa-box'} text-indigo-400 mt-1 text-xs"></i>
+                            <div>
+                                <h4 class="font-semibold text-xs text-slate-200 flex items-center gap-1">
+                                    ${item.title} ${item.star ? '<i class="fa-solid fa-star text-amber-400 text-[10px]"></i>' : ''}
+                                </h4>
+                                <p class="text-[10px] text-slate-400">${item.detail}</p>
+                            </div>
+                        </div>
+                        <div class="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition">
+                            <button onclick="deleteSipoc('outputs', '${item.id}')" class="text-rose-400 hover:text-rose-300 text-[10px] p-1"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `).join('');
+
+            // Customers
+            const cContainer = document.getElementById('sipoc-customers');
+            cContainer.innerHTML = sipocData.customers
+                .filter(item => item.title.toLowerCase().includes(search) || item.detail.toLowerCase().includes(search))
+                .map(item => `
+                    <div class="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 hover:border-purple-500/50 transition group flex items-start justify-between gap-2">
+                        <div class="flex items-start gap-2">
+                            <i class="fa-solid ${item.icon || 'fa-user-check'} text-purple-400 mt-1 text-xs"></i>
+                            <div>
+                                <h4 class="font-semibold text-xs text-slate-200">${item.title}</h4>
+                                <p class="text-[10px] text-slate-400">${item.detail}</p>
+                            </div>
+                        </div>
+                        <div class="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition">
+                            <button onclick="deleteSipoc('customers', '${item.id}')" class="text-rose-400 hover:text-rose-300 text-[10px] p-1"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `).join('');
+        }
+
+        function deleteSipoc(cat, id) {
+            sipocData[cat] = sipocData[cat].filter(x => x.id !== id);
+            saveState();
+            renderSipoc();
+            showToast('Elemento eliminado');
+        }
+
+        function saveSipocItem(e) {
+            e.preventDefault();
+            const cat = document.getElementById('sipoc-category').value;
+            const title = document.getElementById('sipoc-title-input').value;
+            const detail = document.getElementById('sipoc-detail-input').value;
+            const icon = document.getElementById('sipoc-icon-input').value;
+
+            const newItem = {
+                id: 'custom_' + Date.now(),
+                title: title,
+                detail: detail,
+                icon: icon || 'fa-check-circle',
+                num: cat === 'process' ? sipocData.process.length + 1 : undefined
+            };
+
+            sipocData[cat].push(newItem);
+            saveState();
+            renderSipoc();
+            closeModal('modal-add-sipoc');
+            document.getElementById('form-sipoc').reset();
+            showToast('Elemento agregado exitosamente');
+        }
+
+        // RENDERIZAR PANEL DEL AUDITOR
+        function renderAuditor() {
+            // Stats
+            document.getElementById('stat-clauses').innerText = auditorData.clausula.length + ' Cláusulas';
+            document.getElementById('stat-evidences').innerText = auditorData.evidencia.length + ' Registros';
+            document.getElementById('stat-risks').innerText = auditorData.riesgo.length + ' Focos Atención';
+            document.getElementById('stat-questions').innerText = auditorData.pregunta.length + ' Preguntas';
+
+            // A. Cláusulas
+            document.getElementById('auditor-clauses').innerHTML = auditorData.clausula.map(item => `
+                <div class="bg-slate-950/80 p-2.5 rounded-xl border ${item.star ? 'border-amber-500/50 bg-amber-950/10' : 'border-slate-800'} flex items-center justify-between group">
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-xs text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">${item.code}</span>
+                        <span class="text-xs text-slate-200 font-medium">${item.text}</span>
+                    </div>
+                    <button onclick="deleteAuditor('clausula', '${item.id}')" class="opacity-0 group-hover:opacity-100 text-rose-400 hover:text-rose-300 text-[10px] transition"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `).join('');
+
+            // B. Evidencias
+            document.getElementById('auditor-evidences').innerHTML = auditorData.evidencia.map(item => `
+                <div class="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 flex items-start justify-between group">
+                    <div class="flex items-start gap-2">
+                        <span class="font-bold text-[10px] text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-500/20 shrink-0 mt-0.5">${item.code}</span>
+                        <span class="text-xs text-slate-300">${item.text}</span>
+                    </div>
+                    <button onclick="deleteAuditor('evidencia', '${item.id}')" class="opacity-0 group-hover:opacity-100 text-rose-400 hover:text-rose-300 text-[10px] transition"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `).join('');
+
+            // C. Riesgos
+            document.getElementById('auditor-risks').innerHTML = auditorData.riesgo.map(item => `
+                <div class="bg-slate-950/80 p-2.5 rounded-xl border ${item.star ? 'border-rose-500/50 bg-rose-950/10' : 'border-slate-800'} flex items-start justify-between group">
+                    <div class="flex items-start gap-2">
+                        <span class="font-bold text-[10px] text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 shrink-0 mt-0.5">${item.code}</span>
+                        <span class="text-xs text-slate-300">${item.text}</span>
+                    </div>
+                    <button onclick="deleteAuditor('riesgo', '${item.id}')" class="opacity-0 group-hover:opacity-100 text-rose-400 hover:text-rose-300 text-[10px] transition"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `).join('');
+
+            // D. Preguntas
+            document.getElementById('auditor-questions').innerHTML = auditorData.pregunta.map(item => `
+                <div class="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 flex items-start justify-between group">
+                    <div class="flex items-start gap-2">
+                        <i class="fa-solid fa-circle-question text-emerald-400 text-xs mt-1"></i>
+                        <span class="text-xs text-slate-300">${item.text}</span>
+                    </div>
+                    <button onclick="deleteAuditor('pregunta', '${item.id}')" class="opacity-0 group-hover:opacity-100 text-rose-400 hover:text-rose-300 text-[10px] transition"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `).join('');
+        }
+
+        function deleteAuditor(sec, id) {
+            auditorData[sec] = auditorData[sec].filter(x => x.id !== id);
+            saveState();
+            renderAuditor();
+            showToast('Elemento del auditor eliminado');
+        }
+
+        function saveAuditorItem(e) {
+            e.preventDefault();
+            const sec = document.getElementById('auditor-section').value;
+            const text = document.getElementById('auditor-text-input').value;
+            const code = document.getElementById('auditor-code-input').value || 'ISO';
+
+            const newItem = {
+                id: 'aud_' + Date.now(),
+                code: code,
+                text: text
+            };
+
+            auditorData[sec].push(newItem);
+            saveState();
+            renderAuditor();
+            closeModal('modal-add-auditor');
+            document.getElementById('form-auditor').reset();
+            showToast('Registros del auditor actualizados');
+        }
+
+        // Modales Helper
+        function openModal(modalId, secType = null) {
+            document.getElementById(modalId).classList.remove('hidden');
+            if (secType && document.getElementById('auditor-section')) {
+                document.getElementById('auditor-section').value = secType;
+            }
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        // GENERAR SCRIPT SQL CON 40 INSERTS REALES
+        function generateSqlScript() {
+            return `-- =========================================================================
+-- BASE DE DATOS SGC ISO 9001:2026 / ISO 19011:2026 - CAMBIO CLIMÁTICO
+-- Generado para MariaDB / MySQL
+-- Autor: pymesycalidad20.com | Auditoría de Proceso SIPOC
+-- =========================================================================
+
+CREATE DATABASE IF NOT EXISTS sgc_iso9001_2026;
+USE sgc_iso9001_2026;
+
+-- TABLA 1: Proveedores del Proceso (Suppliers)
+CREATE TABLE IF NOT EXISTS proveedores (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(150) NOT NULL,
+    descripcion TEXT,
+    categoria VARCHAR(50) DEFAULT 'Interno'
+);
+
+-- TABLA 2: Entradas del Proceso (Inputs)
+CREATE TABLE IF NOT EXISTS entradas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(200) NOT NULL,
+    clausula_iso VARCHAR(20),
+    descripcion TEXT
+);
+
+-- TABLA 3: Pasos del Subproceso (Process)
+CREATE TABLE IF NOT EXISTS pasos_proceso (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    numero_paso INT NOT NULL,
+    actividad VARCHAR(255) NOT NULL,
+    clausula_iso VARCHAR(50),
+    es_requisito_clave BOOLEAN DEFAULT FALSE
+);
+
+-- TABLA 4: Salidas del Proceso (Outputs)
+CREATE TABLE IF NOT EXISTS salidas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(200) NOT NULL,
+    clausula_iso VARCHAR(50),
+    es_pertinencia_clave BOOLEAN DEFAULT FALSE
+);
+
+-- TABLA 5: Clientes del Proceso (Customers)
+CREATE TABLE IF NOT EXISTS clientes_proceso (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(150) NOT NULL,
+    requisito_recibido TEXT
+);
+
+-- TABLA 6: Hallazgos y Panel del Auditor ISO 19011
+CREATE TABLE IF NOT EXISTS hallazgos_auditoria (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    seccion ENUM('clausula', 'evidencia', 'riesgo', 'pregunta') NOT NULL,
+    codigo VARCHAR(50),
+    descripcion TEXT NOT NULL,
+    cumplimiento_pct DECIMAL(5,2) DEFAULT 0.00
+);
+
+-- =========================================================================
+-- 40 INSERTS EXACTOS BASADOS EN EL DIAGRAMA SIPOC Y PANEL DE AUDITORÍA
+-- =========================================================================
+
+-- INSERTS PROVEEDORES (7 Registros)
+INSERT INTO proveedores (id, nombre, descripcion, categoria) VALUES
+(1, 'Alta Dirección', 'Define contexto y dirección estratégica del SGC', 'Interno'),
+(2, 'Comercialización y Ventas', 'Levanta requisitos de los clientes sobre cambio climático', 'Interno'),
+(3, 'Compras / Gestión de Cadena de Suministro', 'Evalúa proveedores y riesgos de suministro', 'Interno'),
+(4, 'Diseño y Desarrollo de Productos', 'Criterios de ecodiseño y huella ambiental', 'Interno'),
+(5, 'Gestión de Riesgos y Oportunidades', 'Matriz de análisis de riesgos climáticos', 'Interno'),
+(6, 'Autoridades y Entes Reguladores', 'Leyes ambientales, de descarbonización y emisiones', 'Externo'),
+(7, 'Partes Interesadas Externas', 'Clientes, comunidad, ONG, matriz empresarial', 'Externo');
+
+-- INSERTS ENTRADAS (8 Registros)
+INSERT INTO entradas (id, nombre, clausula_iso, descripcion) VALUES
+(8, 'Cuestiones externas e internas de la organización', 'cl. 4.1', 'Análisis PESTEL ambiental y capacidad adaptativa'),
+(9, 'Partes interesadas y sus requisitos', 'cl. 4.2', 'Expectativas climáticas de inversores, clientes y reguladores'),
+(10, 'Requisitos legales y reglamentarios aplicables', 'cl. 4.2', 'Compromisos de emisiones netas cero y gestión de residuos'),
+(11, 'Requisitos contractuales del cliente', 'cl. 8.2.2', 'Certificaciones de huella de carbono y neutralidad'),
+(12, 'Políticas y estrategia de sostenibilidad', 'cl. 5.2', 'Lineamientos corporativos sobre impacto ambiental'),
+(13, 'Resultados de seguimiento, análisis y evaluación previos', 'cl. 9.1.3', 'Histórico de consumo energético y desempeño SGC'),
+(14, 'Tendencias de mercado y expectativas del sector', 'cl. 4.1', 'Nuevas tecnologías limpias y estándares globales'),
+(15, 'Información sobre vulnerabilidad de la cadena de suministro', 'cl. 8.4', 'Riesgos por eventos climáticos extremos en insumos');
+
+-- INSERTS PASOS DEL PROCESO (10 Registros)
+INSERT INTO pasos_proceso (id, numero_paso, actividad, clausula_iso, es_requisito_clave) VALUES
+(16, 1, 'Determinar si el cambio climático es una cuestión pertinente', 'cl. 4.1', TRUE),
+(17, 2, 'Dejar constancia de la decisión y del criterio aplicado', 'Evidencia recomendada', FALSE),
+(18, 3, 'Identificar partes interesadas con requisitos relacionados con el cambio climático', 'cl. 4.2', FALSE),
+(19, 4, 'Realizar el seguimiento y la revisión de la información sobre cuestiones y partes interesadas', 'cl. 4.1 y 4.2', FALSE),
+(20, 5, 'Considerar 4.1 y 4.2 al determinar riesgos y oportunidades', 'cl. 6.1.1', FALSE),
+(21, 6, 'Planificar acciones sobre riesgos (cl. 6.1.2) y oportunidades (cl. 6.1.3)', 'cl. 6.1.2 y 6.1.3', FALSE),
+(22, 7, 'Considerar el tema en los requisitos de productos/servicios y entradas del diseño', 'cl. 8.2.2 y 8.3.3', FALSE),
+(23, 8, 'Comunicar requisitos a proveedores externos y a partes interesadas', 'cl. 8.4.3 y 7.4', FALSE),
+(24, 9, 'Dar seguimiento, analizar y evaluar el desempeño', 'cl. 9.1.1 y 9.1.3', FALSE),
+(25, 10, 'Revisión por la dirección y mejora continua', 'cl. 9.3.2, 9.3.3 y 10.1', FALSE);
+
+-- INSERTS SALIDAS (8 Registros)
+INSERT INTO salidas (id, nombre, clausula_iso, es_pertinencia_clave) VALUES
+(26, 'Determinación de pertinencia del cambio climático', 'cl. 4.1', TRUE),
+(27, 'Partes interesadas y requisitos climáticos pertinentes', 'cl. 4.2', FALSE),
+(28, 'Riesgos y oportunidades determinados', 'cl. 6.1.1', FALSE),
+(29, 'Acciones planificadas y evaluación de su eficacia', 'cl. 6.1.2 y 6.1.3', FALSE),
+(30, 'Requisitos de producto/servicio y entradas de diseño que consideren el tema', 'cl. 8.2.2 y 8.3.3', FALSE),
+(31, 'Requisitos comunicados a proveedores externos', 'cl. 8.4.3', FALSE),
+(32, 'Resultados del análisis y evaluación del desempeño', 'cl. 9.1.3', FALSE),
+(33, 'Decisiones de la revisión por la dirección y oportunidades de mejora', 'cl. 9.3.2, 9.3.3 y 10.1', FALSE);
+
+-- INSERTS CLIENTES PROCESO (7 Registros)
+INSERT INTO clientes_proceso (id, nombre, requisito_recibido) VALUES
+(34, 'Todos los procesos del SGC', 'Reciben contexto, riesgos y oportunidades climáticas integradas'),
+(35, 'Comercialización y Ventas', 'Cumplimiento de requisitos ambientales solicitados por clientes'),
+(36, 'Diseño y Desarrollo', 'Criterios sostenibles para nuevos productos y servicios'),
+(37, 'Compras / Gestión de cadena de suministro', 'Requisitos y controles de evaluación para proveedores'),
+(38, 'Entes reguladores y autoridades', 'Información de cumplimiento normativo y ambiental'),
+(39, 'Partes interesadas externas', 'Información transparente de desempeño y sostenibilidad'),
+(40, 'Alta Dirección', 'Información consolidada para decisiones estratégicas en la revisión por la dirección');
+
+-- INSERTS AUDITORÍA Y MATRIZ CUMPLIMIENTO (Hallazgos y Preguntas Guía)
+INSERT INTO hallazgos_auditoria (seccion, codigo, descripcion, cumplimiento_pct) VALUES
+('clausula', '4.1', 'Comprensión de la organización y de su contexto', 90.00),
+('clausula', '4.2', 'Partes interesadas (requisitos climáticos)', 85.00),
+('clausula', '6.1.1', 'Determinación de riesgos y oportunidades climáticas', 75.00),
+('clausula', '6.1.2', 'Acciones para abordar los riesgos', 60.00),
+('clausula', '8.4.3', 'Información para proveedores externos sobre sostenibilidad', 50.00),
+('clausula', '9.3.2', 'Entradas de la revisión por la dirección', 95.00);
+`;
+        }
+
+        function copySqlScript() {
+            const sqlText = generateSqlScript();
+            const textarea = document.createElement('textarea');
+            textarea.value = sqlText;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showToast('Script SQL copiado al portapapeles');
+        }
+
+        // ==================== 6 CONSULTAS SQL Y GRÁFICOS KPI ====================
+        let currentChart = null;
+
+        const queriesData = {
+            1: {
+                title: "1. Matriz de Cumplimiento de Cambio Climático (ISO 9001:2026)",
+                desc: "Mapeo del porcentaje global de implementación y cumplimiento documental por cláusula auditada.",
+                sql: `SELECT clausula_iso, 
+       COUNT(id) AS total_requisitos,
+       ROUND(AVG(cumplimiento_pct), 2) AS pct_cumplimiento,
+       CASE WHEN AVG(cumplimiento_pct) >= 80 THEN 'CONFORME' ELSE 'REQUIERE MEJORA' END AS estado
+FROM (
+   SELECT 'cl. 4.1' AS clausula_iso, 90 AS cumplimiento_pct UNION ALL
+   SELECT 'cl. 4.2', 85 UNION ALL
+   SELECT 'cl. 6.1', 70 UNION ALL
+   SELECT 'cl. 8.2/8.3', 80 UNION ALL
+   SELECT 'cl. 8.4.3', 50 UNION ALL
+   SELECT 'cl. 9.3/10.1', 95
+) AS matriz
+GROUP BY clausula_iso;`,
+                sug: "Priorizar acciones en cl. 8.4.3 (Proveedores) donde el cumplimiento está por debajo del 60%.",
+                chartType: 'bar',
+                chartData: {
+                    labels: ['cl. 4.1', 'cl. 4.2', 'cl. 6.1', 'cl. 8.2/8.3', 'cl. 8.4.3', 'cl. 9.3/10.1'],
+                    datasets: [{
+                        label: '% Cumplimiento',
+                        data: [90, 85, 70, 80, 50, 95],
+                        backgroundColor: ['#0d9488', '#0d9488', '#d97706', '#0d9488', '#e11d48', '#0d9488']
+                    }]
+                },
+                headers: ['Cláusula ISO', 'Porcentaje Cumplimiento', 'Estado de Conformidad'],
+                rows: [
+                    ['cl. 4.1 Contexto Org.', '90.00%', '<span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-semibold">CONFORME</span>'],
+                    ['cl. 4.2 Partes Interesadas', '85.00%', '<span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-semibold">CONFORME</span>'],
+                    ['cl. 6.1 Riesgos Climáticos', '70.00%', '<span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 font-semibold">REQUIERE MEJORA</span>'],
+                    ['cl. 8.2/8.3 Diseño y Producto', '80.00%', '<span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-semibold">CONFORME</span>'],
+                    ['cl. 8.4.3 Cadena Suministro', '50.00%', '<span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 font-semibold">ALERTA BRECHA</span>'],
+                    ['cl. 9.3/10.1 Rev. Dirección', '95.00%', '<span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-semibold">CONFORME</span>']
+                ]
+            },
+            2: {
+                title: "2. Análisis de Brecha (Gap Analysis) de Evidencias Auditables (ISO 19011)",
+                desc: "Detecta cuáles fuentes de evidencia requeridas aún no cuentan con soporte verificado en auditoría.",
+                sql: `SELECT e.codigo, e.descripcion AS evidencia_requerida,
+       IF(h.id IS NOT NULL, 'EVIDENCIA PRESENTE', 'FALTA EVIDENCIA') AS estado_hallazgo
+FROM evidencias_requeridas e
+LEFT JOIN hallazgos_auditoria h ON e.codigo = h.codigo;`,
+                sug: "Generar registros formales del criterio de pertinencia de cl. 4.1 antes de la auditoría externa.",
+                chartType: 'doughnut',
+                chartData: {
+                    labels: ['Evidencia Presente', 'Falta Evidencia / Pendiente'],
+                    datasets: [{
+                        data: [6, 2],
+                        backgroundColor: ['#059669', '#e11d48']
+                    }]
+                },
+                headers: ['Código Evidencia', 'Evidencia Requerida', 'Estado en Auditoría'],
+                rows: [
+                    ['cl. 4.1', 'Registro de pertinencia del Cambio Climático y Criterio', '<span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-semibold">DISPONIBLE</span>'],
+                    ['cl. 4.2', 'Matriz de requisitos climáticos de partes interesadas', '<span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-semibold">DISPONIBLE</span>'],
+                    ['cl. 6.1.2', 'Plan de reducción de huella de carbono y contingencia', '<span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 font-semibold">EN ENVIÓ</span>'],
+                    ['cl. 8.4.3', 'Comunicación de estándares verdes a proveedores', '<span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 font-semibold">PENDIENTE</span>']
+                ]
+            },
+            3: {
+                title: "3. Riesgos Operativos vs Oportunidades Climáticas (cl. 6.1)",
+                desc: "Relación entre riesgos climáticos identificados y la existencia de acciones planificadas eficaces.",
+                sql: `SELECT r.tipo, COUNT(r.id) AS total,
+       SUM(CASE WHEN r.tiene_accion = 1 THEN 1 ELSE 0 END) AS con_plan_accion
+FROM riesgos_oportunidades r
+GROUP BY r.tipo;`,
+                sug: "Convertir los riesgos de la cadena de suministro en oportunidades de alianza estratégica sostenible.",
+                chartType: 'pie',
+                chartData: {
+                    labels: ['Riesgos con Acción', 'Riesgos sin Acción', 'Oportunidades Aprovechadas'],
+                    datasets: [{
+                        data: [5, 2, 4],
+                        backgroundColor: ['#3b82f6', '#f59e0b', '#10b981']
+                    }]
+                },
+                headers: ['Categoría ISO 6.1', 'Cantidad Total', 'Acciones Planificadas'],
+                rows: [
+                    ['Riesgos Físicos Climáticos', '4 Riesgos', '<span class="text-emerald-400 font-semibold">3 Con Plan</span>'],
+                    ['Riesgos de Transición / Legal', '3 Riesgos', '<span class="text-amber-400 font-semibold">2 Con Plan</span>'],
+                    ['Oportunidades de Ecodiseño', '4 Oportunidades', '<span class="text-emerald-400 font-semibold">4 En Ejecución</span>']
+                ]
+            },
+            4: {
+                title: "4. Traza SIPOC: Entradas Críticas vs Productos de Salida",
+                desc: "Asegura la trazabilidad desde las entradas del contexto climático hasta la entrega final al cliente.",
+                sql: `SELECT i.nombre AS Entrada, p.actividad AS Subproceso_Asociado, o.nombre AS Salida_Generada
+FROM entradas i
+JOIN pasos_proceso p ON p.numero_paso = 1 OR p.numero_paso = 7
+JOIN salidas o ON o.clausula_iso = p.clausula_iso;`,
+                sug: "Revisar que la huella de carbono especificada en las Entradas se refleje en las salidas de Diseño.",
+                chartType: 'bar',
+                chartData: {
+                    labels: ['Entradas Recibidas', 'Pasos SIPOC Ejecutados', 'Salidas Conformes', 'Clientes Satisfechos'],
+                    datasets: [{
+                        label: 'Flujo SIPOC',
+                        data: [8, 10, 8, 7],
+                        backgroundColor: '#6366f1'
+                    }]
+                },
+                headers: ['Entrada Requerida (Inputs)', 'Paso del Proceso (Process)', 'Salida Generada (Outputs)'],
+                rows: [
+                    ['Cuestiones Clima (cl. 4.1)', 'Paso 1: Determinar pertinencia', 'Determinación de Pertinencia ★'],
+                    ['Requisitos Cliente (cl. 4.2)', 'Paso 7: Requisitos en Diseño', 'Entradas de Diseño Sostenible'],
+                    ['Información Cadena Suministro', 'Paso 8: Comunicar Proveedores', 'Requisitos a Proveedores Externos']
+                ]
+            },
+            5: {
+                title: "5. Resumen Ejecutivo para Revisión por la Dirección (cl. 9.3)",
+                desc: "Consolidado de desempeño, estado de decisiones y recomendaciones para la mejora continua (cl. 10.1).",
+                sql: `SELECT 'Indicadores de Cambio Climático' AS Metrica,
+       '92%' AS Desempeno_Global,
+       'Aprobado por Alta Dirección' AS Estado_Revision;`,
+                sug: "Incluir el análisis de resiliencia climática en la próxima reunión trimestral de la Dirección.",
+                chartType: 'doughnut',
+                chartData: {
+                    labels: ['Aprobado en Revisión', 'Pendiente de Análisis', 'Requiere Ajuste'],
+                    datasets: [{
+                        data: [85, 10, 5],
+                        backgroundColor: ['#10b981', '#3b82f6', '#f59e0b']
+                    }]
+                },
+                headers: ['Métrica del SGC', 'Valor Evaluado', 'Dictamen Dirección'],
+                rows: [
+                    ['Revisión Contexto Climático', 'Completado 100%', '<span class="text-emerald-400 font-semibold">APROBADO</span>'],
+                    ['Eficacia de Acciones (cl. 6.1)', 'Eficaz (88%)', '<span class="text-emerald-400 font-semibold">APROBADO</span>'],
+                    ['Asignación de Recursos Verdes', 'Presupuesto 2026', '<span class="text-blue-400 font-semibold">EN ASIGNACIÓN</span>']
+                ]
+            },
+            6: {
+                title: "6. Nivel de Madurez del SGC y Auditoría ISO 19011",
+                desc: "Evaluación del nivel de preparación de la organización frente a auditorías internas y de certificación.",
+                sql: `SELECT 
+   AVG(cumplimiento_pct) AS Nivel_Madurez_Global,
+   CASE 
+      WHEN AVG(cumplimiento_pct) >= 85 THEN 'NIVEL OPTIMIZADO / MADURO'
+      WHEN AVG(cumplimiento_pct) >= 70 THEN 'NIVEL GESTIONADO'
+      ELSE 'NIVEL INICIAL / EN RIESGO'
+   END AS Categoria_Madurez
+FROM hallazgos_auditoria;`,
+                sug: "Mantener la evidencia documental actualizada y accesible para los auditores externos.",
+                chartType: 'polarArea',
+                chartData: {
+                    labels: ['Contexto (4.1/4.2)', 'Planificación (6.1)', 'Operación (8.2/8.4)', 'Evaluación (9.1/9.3)', 'Mejora (10.1)'],
+                    datasets: [{
+                        data: [90, 75, 65, 85, 95],
+                        backgroundColor: ['rgba(13, 148, 136, 0.7)', 'rgba(217, 119, 6, 0.7)', 'rgba(225, 29, 72, 0.7)', 'rgba(59, 130, 246, 0.7)', 'rgba(16, 185, 129, 0.7)']
+                    }]
+                },
+                headers: ['Dominio del SGC', 'Puntaje Madurez', 'Evaluación Auditoría'],
+                rows: [
+                    ['Contexto y Partes Interesadas', '90 / 100', '<span class="text-emerald-400 font-semibold">MADUREZ ALTA</span>'],
+                    ['Planificación de Riesgos', '75 / 100', '<span class="text-amber-400 font-semibold">MADUREZ MEDIA</span>'],
+                    ['Cadena de Suministro', '65 / 100', '<span class="text-rose-400 font-semibold">REQUIERE ATENCIÓN</span>'],
+                    ['Evaluación y Mejora', '90 / 100', '<span class="text-emerald-400 font-semibold">MADUREZ ALTA</span>']
+                ]
+            }
+        };
+
+        function runQuery(qId) {
+            const data = queriesData[qId];
+
+            // Activate button styling
+            document.querySelectorAll('.q-btn').forEach(b => {
+                b.classList.remove('bg-teal-600', 'border-teal-500', 'text-white');
+                b.classList.add('bg-slate-950', 'border-slate-800', 'text-slate-400');
+            });
+            const activeBtn = document.getElementById('btn-q' + qId);
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-slate-950', 'border-slate-800', 'text-slate-400');
+                activeBtn.classList.add('bg-teal-600', 'border-teal-500', 'text-white');
+            }
+
+            // Fill text
+            document.getElementById('query-badge').innerText = 'Query ' + qId;
+            document.getElementById('query-title').innerText = data.title;
+            document.getElementById('query-desc').innerText = data.desc;
+            document.getElementById('query-sql-code').innerText = data.sql;
+            document.getElementById('query-sug').innerText = 'Sugerencia: ' + data.sug;
+
+            // Fill Table
+            document.getElementById('query-table-head').innerHTML = data.headers.map(h => `<th class="p-2.5 font-semibold">${h}</th>`).join('');
+            document.getElementById('query-table-body').innerHTML = data.rows.map(row => `
+                <tr class="hover:bg-slate-950/40">
+                    ${row.map(cell => `<td class="p-2.5">${cell}</td>`).join('')}
+                </tr>
+            `).join('');
+
+            // Render Chart
+            renderChart(data.chartType, data.chartData);
+        }
+
+        function renderChart(type, chartData) {
+            const ctx = document.getElementById('kpiChart').getContext('2d');
+            if (currentChart) {
+                currentChart.destroy();
+            }
+
+            currentChart = new Chart(ctx, {
+                type: type,
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 } }
+                        }
+                    },
+                    scales: (type === 'bar') ? {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#1e293b' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        x: {
+                            grid: { color: '#1e293b' },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    } : {}
+                }
+            });
+        }
+
+        // Inicialización al cargar la ventana
+        window.onload = function () {
+            renderSipoc();
+            renderAuditor();
+            document.getElementById('sql-code-block').innerText = generateSqlScript();
+        };
+    </script>
+</body>
+</html>
